@@ -30,7 +30,7 @@ class StorageViewModel(application: Application) : AndroidViewModel(application)
     private val context get() = getApplication<Application>()
     private val storageManager by lazy {
         StorageManager(
-            context.getFile().toPath(),
+                context.getFile().toPath(),
                 retrievePreference().toLong()
         )
     }
