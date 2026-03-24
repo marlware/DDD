@@ -189,7 +189,8 @@ public class SecurityUtils {
             return Base64.getUrlEncoder().encodeToString(encryptedData);
         }
 
-        // isBundleID=false: prepend IV so decryption can extract it; combined = [iv (16 bytes) + encryptedData (16N bytes)]
+        // isBundleID=false: prepend IV so decryption can extract it; combined = [iv (16 bytes) + encryptedData (16N
+        // bytes)]
         // return Base64(iv + encryptedData)
         byte[] combined = new byte[iv.length + encryptedData.length];
         System.arraycopy(iv, 0, combined, 0, iv.length);
