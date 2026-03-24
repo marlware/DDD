@@ -134,9 +134,10 @@ public class LocalAduSendReceive extends StdOutMixin {
                      bundleExchangeCounts.downloadStatus());
         if (bundleExchangeCounts.uploadStatus() == ClientBundleTransmission.Statuses.FAILED ||
                 bundleExchangeCounts.downloadStatus() == ClientBundleTransmission.Statuses.FAILED) {
-            throw new ExecutionException(cmd(), "Exchange failed: Sent " +
-                    bundleExchangeCounts.uploadStatus() + ", received " +
-                    bundleExchangeCounts.downloadStatus(), bundleExchangeCounts.e());
+            throw new ExecutionException(cmd(),
+                                         "Exchange failed: Sent " + bundleExchangeCounts.uploadStatus() +
+                                                 ", received " + bundleExchangeCounts.downloadStatus(),
+                                         bundleExchangeCounts.e());
         }
     }
 
