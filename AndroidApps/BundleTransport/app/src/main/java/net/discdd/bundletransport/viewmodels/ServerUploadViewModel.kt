@@ -71,6 +71,11 @@ class ServerUploadViewModel(
     private val _backgroundExchange = MutableStateFlow(0)
     val backgroundExchange = _backgroundExchange.asStateFlow()
 
+    private val _isCustomServer = MutableStateFlow(
+        sharedPref.getString(BundleTransportService.BUNDLETRANSPORT_DOMAIN_PREFERENCE, AndroidAppConstants.BUNDLE_SERVER_DOMAIN) != AndroidAppConstants.BUNDLE_SERVER_DOMAIN
+    )
+    val isCustomServer = _isCustomServer.asStateFlow()
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             AndroidAppConstants.checkDefaultDomainPortSettings(sharedPref)
@@ -171,6 +176,18 @@ class ServerUploadViewModel(
 
     fun clearMessage() {
         _state.update { it.copy(message = null) }
+    }
+
+    fun applyScannedConfig(host: String, port: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _state.update { it.copy(domain = host, port = port.toString()) }
+            sharedPref.edit {
+                putString(BundleTransportService.BUNDLETRANSPORT_DOMAIN_PREFERENCE, host)
+                putInt(BundleTransportService.BUNDLETRANSPORT_PORT_PREFERENCE, port)
+            }
+            _isCustomServer.value = true
+            _state.update { it.copy(message = "Saved. Host: $host, Port: $port") }
+        }
     }
 
     fun setBackgroundExchange(value: Int) {
