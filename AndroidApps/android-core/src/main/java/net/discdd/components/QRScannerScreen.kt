@@ -42,33 +42,33 @@ import java.util.concurrent.Executors
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun QRScannerScreen(
-    onQRCodeScanned: (String) -> Unit,
-    onDismiss: () -> Unit,
+        onQRCodeScanned: (String) -> Unit,
+        onDismiss: () -> Unit,
 ) {
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background,
     ) {
         if (cameraPermissionState.status.isGranted) {
             CameraPreviewWithScanner(onQRCodeScanned = onQRCodeScanned, onDismiss = onDismiss)
         } else {
             Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "Camera permission is required to scan QR codes.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(bottom = 16.dp),
+                        text = "Camera permission is required to scan QR codes.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(bottom = 16.dp),
                 )
                 FilledTonalButton(onClick = { cameraPermissionState.launchPermissionRequest() }) {
                     Text("Grant Camera Permission")
                 }
                 FilledTonalButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.padding(top = 8.dp),
+                        onClick = onDismiss,
+                        modifier = Modifier.padding(top = 8.dp),
                 ) {
                     Text("Cancel")
                 }
@@ -79,9 +79,9 @@ fun QRScannerScreen(
 
 @ExperimentalGetImage
 private class QRImageAnalyzer(
-    private val onScanned: (String) -> Unit,
-    private val scannedFlag: () -> Boolean,
-    private val setScanned: () -> Unit,
+        private val onScanned: (String) -> Unit,
+        private val scannedFlag: () -> Boolean,
+        private val setScanned: () -> Unit,
 ) : ImageAnalysis.Analyzer {
     private val barcodeScanner = BarcodeScanning.getClient()
 
@@ -90,25 +90,25 @@ private class QRImageAnalyzer(
         if (mediaImage != null && !scannedFlag()) {
             val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
             barcodeScanner.process(image)
-                .addOnSuccessListener { barcodes ->
-                    for (barcode in barcodes) {
-                        if (barcode.valueType == Barcode.TYPE_URL ||
-                            barcode.valueType == Barcode.TYPE_TEXT
-                        ) {
-                            val value = barcode.rawValue
-                            if (value != null && !scannedFlag()) {
-                                setScanned()
-                                onScanned(value)
+                    .addOnSuccessListener { barcodes ->
+                        for (barcode in barcodes) {
+                            if (barcode.valueType == Barcode.TYPE_URL ||
+                                    barcode.valueType == Barcode.TYPE_TEXT
+                            ) {
+                                val value = barcode.rawValue
+                                if (value != null && !scannedFlag()) {
+                                    setScanned()
+                                    onScanned(value)
+                                }
                             }
                         }
                     }
-                }
-                .addOnFailureListener { e ->
-                    Log.e("QRScanner", "Barcode scan failed", e)
-                }
-                .addOnCompleteListener {
-                    imageProxy.close()
-                }
+                    .addOnFailureListener { e ->
+                        Log.e("QRScanner", "Barcode scan failed", e)
+                    }
+                    .addOnCompleteListener {
+                        imageProxy.close()
+                    }
         } else {
             imageProxy.close()
         }
@@ -118,8 +118,8 @@ private class QRImageAnalyzer(
 @androidx.annotation.OptIn(ExperimentalGetImage::class)
 @Composable
 private fun CameraPreviewWithScanner(
-    onQRCodeScanned: (String) -> Unit,
-    onDismiss: () -> Unit,
+        onQRCodeScanned: (String) -> Unit,
+        onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -141,46 +141,46 @@ private fun CameraPreviewWithScanner(
         val provider = cameraProvider
         if (provider != null) {
             AndroidView(
-                factory = { ctx ->
-                    val previewView = PreviewView(ctx)
-                    val preview = Preview.Builder().build().also {
-                        it.surfaceProvider = previewView.surfaceProvider
-                    }
+                    factory = { ctx ->
+                        val previewView = PreviewView(ctx)
+                        val preview = Preview.Builder().build().also {
+                            it.surfaceProvider = previewView.surfaceProvider
+                        }
 
-                    val imageAnalysis = ImageAnalysis.Builder()
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .build()
+                        val imageAnalysis = ImageAnalysis.Builder()
+                                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                                .build()
 
-                    imageAnalysis.setAnalyzer(executor, QRImageAnalyzer(
-                        onScanned = onQRCodeScanned,
-                        scannedFlag = { scanned },
-                        setScanned = { scanned = true },
-                    ))
+                        imageAnalysis.setAnalyzer(executor, QRImageAnalyzer(
+                                onScanned = onQRCodeScanned,
+                                scannedFlag = { scanned },
+                                setScanned = { scanned = true },
+                        ))
 
-                    try {
-                        provider.unbindAll()
-                        provider.bindToLifecycle(
-                            lifecycleOwner,
-                            CameraSelector.DEFAULT_BACK_CAMERA,
-                            preview,
-                            imageAnalysis,
-                        )
-                    } catch (e: Exception) {
-                        Log.e("QRScanner", "Camera bind failed", e)
-                    }
+                        try {
+                            provider.unbindAll()
+                            provider.bindToLifecycle(
+                                    lifecycleOwner,
+                                    CameraSelector.DEFAULT_BACK_CAMERA,
+                                    preview,
+                                    imageAnalysis,
+                            )
+                        } catch (e: Exception) {
+                            Log.e("QRScanner", "Camera bind failed", e)
+                        }
 
-                    previewView
-                },
-                modifier = Modifier.fillMaxSize(),
+                        previewView
+                    },
+                    modifier = Modifier.fillMaxSize(),
             )
         }
 
         FilledTonalButton(
-            onClick = onDismiss,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(32.dp)
-                .fillMaxWidth(),
+                onClick = onDismiss,
+                modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(32.dp)
+                        .fillMaxWidth(),
         ) {
             Text("Cancel")
         }

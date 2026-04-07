@@ -83,14 +83,14 @@ fun ServerUploadScreen(
 
     if (showQRScanner) {
         QRScannerScreen(
-            onQRCodeScanned = { scannedUrl ->
-                val config = QRCodeParser.parse(scannedUrl)
-                if (config != null) {
-                    uploadViewModel.applyScannedConfig(config.host, config.port)
-                }
-                showQRScanner = false
-            },
-            onDismiss = { showQRScanner = false },
+                onQRCodeScanned = { scannedUrl ->
+                    val config = QRCodeParser.parse(scannedUrl)
+                    if (config != null) {
+                        uploadViewModel.applyScannedConfig(config.host, config.port)
+                    }
+                    showQRScanner = false
+                },
+                onDismiss = { showQRScanner = false },
         )
         return
     }

@@ -72,7 +72,7 @@ class ServerUploadViewModel(
     val backgroundExchange = _backgroundExchange.asStateFlow()
 
     private val _isCustomServer = MutableStateFlow(
-        sharedPref.getString(BundleTransportService.BUNDLETRANSPORT_DOMAIN_PREFERENCE, AndroidAppConstants.BUNDLE_SERVER_DOMAIN) != AndroidAppConstants.BUNDLE_SERVER_DOMAIN
+            sharedPref.getString(BundleTransportService.BUNDLETRANSPORT_DOMAIN_PREFERENCE, AndroidAppConstants.BUNDLE_SERVER_DOMAIN) != AndroidAppConstants.BUNDLE_SERVER_DOMAIN
     )
     val isCustomServer = _isCustomServer.asStateFlow()
 

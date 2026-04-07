@@ -38,9 +38,12 @@ public class QRCodeController {
             String ratchet = readKeyFromPem(Path.of(serverKeysPath, "server_ratchet.pub"));
 
             String host = request.getServerName();
-            String url = String.format(
-                    "https://discdd.net/srvr?host=%s&port=%d&identity=%s&signedpre=%s&ratchet=%s",
-                    host, grpcPort, identity, signedPre, ratchet);
+            String url = String.format("https://discdd.net/srvr?host=%s&port=%d&identity=%s&signedpre=%s&ratchet=%s",
+                                       host,
+                                       grpcPort,
+                                       identity,
+                                       signedPre,
+                                       ratchet);
 
             byte[] pngBytes = generateQRCodePng(url);
             return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(pngBytes);
