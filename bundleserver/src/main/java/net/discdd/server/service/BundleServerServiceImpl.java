@@ -142,8 +142,10 @@ public class BundleServerServiceImpl extends BundleServerServiceGrpc.BundleServe
         for (int i = 0; i < request.getCrashReportDataCount(); i++) {
             File crashFile = new File(crashDir, name + "_" + (i + 1));
             try {
-                Files.write(crashFile.toPath(), request.getCrashReportData(i).toByteArray(),
-                            StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                Files.write(crashFile.toPath(),
+                            request.getCrashReportData(i).toByteArray(),
+                            StandardOpenOption.CREATE,
+                            StandardOpenOption.TRUNCATE_EXISTING);
             } catch (IOException e) {
                 logger.log(WARNING, "Couldn't write crash file to " + crashFile, e);
                 response.onNext(CrashReportResponse.newBuilder().setResult(Status.FAILED).build());

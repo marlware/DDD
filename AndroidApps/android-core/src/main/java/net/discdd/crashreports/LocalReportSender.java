@@ -90,14 +90,18 @@ public class LocalReportSender implements ReportSender {
                     if (newNum != 0) {
                         String modified = "crash_report" + newNum + ".txt";
                         try {
-                            logger.log(INFO, "Optimizing crash reports moving the file " + file.toFile().getName() + " to " + file.getParent().resolve(modified));
+                            logger.log(INFO,
+                                       "Optimizing crash reports moving the file " + file.toFile().getName() + " to " +
+                                               file.getParent().resolve(modified));
                             Files.move(file, file.getParent().resolve(modified), StandardCopyOption.REPLACE_EXISTING);
                         } catch (IOException e) {
                             logger.log(SEVERE, "Optimizing crash reports unsuccessfully attempted to move directory");
                         }
                     } else {
                         if (file.toFile().delete()) {
-                            logger.log(INFO, "Optimizing crash reports successfully deleted the file: " + file.toFile().getName());
+                            logger.log(INFO,
+                                       "Optimizing crash reports successfully deleted the file: " +
+                                               file.toFile().getName());
                         }
                     }
                 });
