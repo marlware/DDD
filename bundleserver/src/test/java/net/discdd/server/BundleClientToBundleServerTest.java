@@ -318,12 +318,11 @@ public class BundleClientToBundleServerTest extends End2EndTest {
             // Should only receive ADU from TEST_APPID, not from TEST_UNREG_APPID
             assertEquals(1, req.getAdusCount(), "Should only receive 1 ADU (from registered app)");
             assertEquals(100, req.getAdus(0).getAduId(), "ADU should be from registered app (id=100)");
-            assertEquals("ADU for registered app", req.getAdus(0).getData().toStringUtf8(),
+            assertEquals("ADU for registered app",
+                         req.getAdus(0).getData().toStringUtf8(),
                          "ADU content should match the registered app's ADU");
 
-            rsp.onNext(ExchangeADUsResponse.newBuilder()
-                               .setLastADUIdReceived(100)
-                               .build());
+            rsp.onNext(ExchangeADUsResponse.newBuilder().setLastADUIdReceived(100).build());
             rsp.onCompleted();
         });
 

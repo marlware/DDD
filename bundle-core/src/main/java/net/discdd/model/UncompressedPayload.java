@@ -18,7 +18,11 @@ public class UncompressedPayload {
     private final List<ADU> ADUs;
     private final List<String> appIds;
 
-    private UncompressedPayload(String bundleId, Acknowledgement ackRecord, List<ADU> ADUs, File source, List<String> appIds) {
+    private UncompressedPayload(String bundleId,
+                                Acknowledgement ackRecord,
+                                List<ADU> ADUs,
+                                File source,
+                                List<String> appIds) {
         this.bundleId = bundleId;
         this.ackRecord = ackRecord;
         this.ADUs = ADUs;
@@ -37,6 +41,7 @@ public class UncompressedPayload {
     public List<ADU> getADUs() {
         return this.ADUs;
     }
+
     public List<String> getAppIds() {
         return this.appIds;
     }
@@ -98,7 +103,11 @@ public class UncompressedPayload {
         }
 
         public UncompressedPayload build() {
-            return new UncompressedPayload(this.bundleId, this.ackRecord, this.ADUs, this.source, this.appIds == null ? List.of() : this.appIds);
+            return new UncompressedPayload(this.bundleId,
+                                           this.ackRecord,
+                                           this.ADUs,
+                                           this.source,
+                                           this.appIds == null ? List.of() : this.appIds);
         }
     }
 }

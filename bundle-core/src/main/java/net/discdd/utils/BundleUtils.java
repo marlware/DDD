@@ -328,8 +328,8 @@ public class BundleUtils {
                                                   byte[] routingData,
                                                   String ackedEncryptedBundleId,
                                                   String crashReport,
-                                                  OutputStream outputStream, List<String> appIds) throws IOException,
-            NoSuchAlgorithmException {
+                                                  OutputStream outputStream,
+                                                  List<String> appIds) throws IOException, NoSuchAlgorithmException {
         try (DDDJarFileCreator innerJar = new DDDJarFileCreator(outputStream)) {
             if (ackedEncryptedBundleId == null) ackedEncryptedBundleId = "HB";
             logger.log(INFO, "[BU/createBundlePayload] " + adus.size());
@@ -392,7 +392,8 @@ public class BundleUtils {
                                       String crashReport,
                                       List<ADU> adus,
                                       byte[] routingData,
-                                      PipedInputStream inputPipe, List<String> appIds) throws IOException {
+                                      PipedInputStream inputPipe,
+                                      List<String> appIds) throws IOException {
         PipedOutputStream outputPipe = new PipedOutputStream(inputPipe);
         Future<?> future = executorService.submit(() -> {
             try {

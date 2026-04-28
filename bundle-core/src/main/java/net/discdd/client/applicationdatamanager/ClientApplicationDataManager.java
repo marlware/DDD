@@ -114,9 +114,11 @@ public class ClientApplicationDataManager {
         final long dataSizeLimit = ClientPaths.APP_DATA_SIZE_LIMIT;
         var sizeLimiter = new SizeLimiter(dataSizeLimit - initialSize);
         // we cannot use .toList() since we are targeting Java 11, but Intellij really wants us to
-        List<String> appIds = this.getRegisteredAppIds().isEmpty() ? sendADUsStorage.getAllClientApps(true)
-                .map(StoreADUs.ClientApp::appId)
-                .collect(Collectors.toUnmodifiableList()) : this.getRegisteredAppIds();
+        List<String> appIds = this.getRegisteredAppIds().isEmpty() ?
+                              sendADUsStorage.getAllClientApps(true)
+                                      .map(StoreADUs.ClientApp::appId)
+                                      .collect(Collectors.toUnmodifiableList()) :
+                              this.getRegisteredAppIds();
         for (String appId : appIds) {
             StreamExt.takeWhile(sendADUsStorage.getADUs(clientId, appId), a -> sizeLimiter.test(a.getSize()))
                     .forEach(adusToSend::add);
