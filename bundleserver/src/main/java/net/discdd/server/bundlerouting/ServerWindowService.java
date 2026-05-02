@@ -25,10 +25,12 @@ public class ServerWindowService {
     private final Optional<ServerSecurity> serverSecurity;
 
     @Autowired
-    public ServerWindowService(ServerWindowRepository serverWindowRepository, ObjectProvider<ServerSecurity> serverSecurityProvider) {
+    public ServerWindowService(ServerWindowRepository serverWindowRepository,
+                               ObjectProvider<ServerSecurity> serverSecurityProvider) {
         this.serverwindowrepo = serverWindowRepository;
         this.serverSecurity = serverSecurityProvider.getIfAvailable() != null ?
-            Optional.of(serverSecurityProvider.getIfAvailable()) : Optional.empty();
+                              Optional.of(serverSecurityProvider.getIfAvailable()) :
+                              Optional.empty();
     }
 
     private static final Logger logger = Logger.getLogger(ServerWindowService.class.getName());
