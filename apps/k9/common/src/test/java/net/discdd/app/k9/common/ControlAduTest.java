@@ -9,7 +9,8 @@ import java.util.Map;
 public class ControlAduTest {
     @Test
     public void testControlAdus() throws IOException {
-        var origLoginAdu = new ControlAdu.LoginControlAdu(Map.of("email", "testuser", "password", "testpass", "locale", "uk"));
+        var origLoginAdu =
+                new ControlAdu.LoginControlAdu(Map.of("email", "testuser", "password", "testpass", "locale", "uk"));
         var serDeserLoginAdu = (ControlAdu.LoginControlAdu) ControlAdu.fromBytes(origLoginAdu.toBytes());
         Assertions.assertEquals(origLoginAdu, serDeserLoginAdu);
         Assertions.assertEquals("uk", serDeserLoginAdu.locale());
