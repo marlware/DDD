@@ -184,8 +184,7 @@ public class ClientBundleTransmission {
         Acknowledgement ackRecord = AckRecordUtils.readAckRecordFromFile(clientPaths.ackRecordPath);
         List<Path> crashReports;
         try (var stream = Files.list(clientPaths.toBeBundledDir)) {
-            crashReports = stream
-                    .filter(Files::isRegularFile)
+            crashReports = stream.filter(Files::isRegularFile)
                     .filter(p -> p.getFileName().toString().startsWith("crash_report"))
                     .sorted()
                     .collect(Collectors.toList());

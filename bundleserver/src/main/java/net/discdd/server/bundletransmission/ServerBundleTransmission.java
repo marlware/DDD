@@ -102,7 +102,6 @@ public class ServerBundleTransmission {
         return Long.toHexString(random.nextLong());
     }
 
-
     @Async
     @Transactional
     public void processReceivedBundle(BundleSenderType senderType, String senderId, Bundle bundle) throws Exception {
@@ -153,10 +152,13 @@ public class ServerBundleTransmission {
 
             UncompressedPayload uncompressedPayload =
                     BundleUtils.extractPayload(payload, uncompressedBundle.getSource().toPath());
-            logger.log(INFO, "[CrashReports] extracted payload to: " + uncompressedPayload.getSource().getAbsolutePath());
-            Path crashReportSrcDir = uncompressedPayload.getSource().toPath()
-                    .resolve(Constants.BUNDLE_CRASH_REPORT_DIRECTORY_NAME);
-            logger.log(INFO, "[CrashReports] looking for crash reports in: " + crashReportSrcDir + " exists=" + Files.isDirectory(crashReportSrcDir));
+            logger.log(INFO,
+                       "[CrashReports] extracted payload to: " + uncompressedPayload.getSource().getAbsolutePath());
+            Path crashReportSrcDir =
+                    uncompressedPayload.getSource().toPath().resolve(Constants.BUNDLE_CRASH_REPORT_DIRECTORY_NAME);
+            logger.log(INFO,
+                       "[CrashReports] looking for crash reports in: " + crashReportSrcDir + " exists=" +
+                               Files.isDirectory(crashReportSrcDir));
             if (Files.isDirectory(crashReportSrcDir)) {
                 Path destDir = Path.of(bundleStoreShared, "crashReports", "client");
                 logger.log(INFO, "[CrashReports] writing to destDir: " + destDir);
@@ -165,7 +167,8 @@ public class ServerBundleTransmission {
                     long timestamp = System.currentTimeMillis();
                     try (var entries = Files.list(crashReportSrcDir).filter(Files::isRegularFile)) {
                         var reports = entries.sorted().collect(Collectors.toList());
-                        logger.log(INFO, "[CrashReports] found " + reports.size() + " report(s) for client " + clientId);
+                        logger.log(INFO,
+                                   "[CrashReports] found " + reports.size() + " report(s) for client " + clientId);
                         for (int i = 0; i < reports.size(); i++) {
                             Path dest = destDir.resolve(clientId + "_" + timestamp + "_" + (i + 1));
                             logger.log(INFO, "[CrashReports] copying " + reports.get(i) + " -> " + dest);
