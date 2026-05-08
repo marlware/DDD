@@ -106,21 +106,17 @@ public class TransportToBundleServerManager {
             var bundlesFromClients = populateListFromPath(fromClientPath);
             var bundlesFromServer = populateListFromPath(fromServerPath);
 
-            File[] crashReportFiles = crashReportsDir.toFile()
-                    .listFiles((dir, name) -> name.startsWith("crash_report") && name.endsWith(".txt"));
+            File[] crashReportFiles = crashReportsDir.toFile().listFiles(
+                    (dir, name) -> name.startsWith("crash_report") && name.endsWith(".txt"));
             if (crashReportFiles != null && crashReportFiles.length > 0) {
                 var requestBuilder = CrashReportRequest.newBuilder();
                 for (File crashFile : crashReportFiles) {
                     requestBuilder.addCrashReportData(ByteString.copyFrom(Files.readAllBytes(crashFile.toPath())));
                 }
-                var crashResponse = bsStub.withDeadlineAfter(Constants.GRPC_LONG_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+                bsStub.withDeadlineAfter(Constants.GRPC_LONG_TIMEOUT_MS, TimeUnit.MILLISECONDS)
                         .crashReports(requestBuilder.build());
-                if (crashResponse.getResult() == net.discdd.grpc.Status.SUCCESS) {
-                    for (File crashFile : crashReportFiles) {
-                        if (!crashFile.delete()) {
-                            logger.log(SEVERE, "Failed to delete crash report: " + crashFile.getName());
-                        }
-                    }
+                for (File crashFile : crashReportFiles) {
+                    crashFile.delete();
                 }
             }
             var inventoryResponse = bsStub.withDeadlineAfter(Constants.GRPC_LONG_TIMEOUT_MS, TimeUnit.MILLISECONDS)

@@ -22,7 +22,9 @@ import net.discdd.server.bundlesecurity.ServerBundleSecurity;
 import net.discdd.server.config.BundleServerConfig;
 import net.discdd.server.repository.entity.ClientBundleCounters;
 import net.discdd.utils.BundleUtils;
+import net.discdd.utils.Constants;
 import net.discdd.utils.FileUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,7 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
@@ -49,6 +52,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
@@ -70,6 +74,8 @@ public class ServerBundleTransmission {
     private final BundleRouting bundleRouting;
     private final ServerWindowService serverWindowService;
     private final ServerSecurity serverSecurity;
+    @Value("${bundle-server.bundle-store-shared}")
+    private String bundleStoreShared;
     SecureRandom secureRandom = new SecureRandom();
 
     public ServerBundleTransmission(ServerBundleSecurity bundleSecurity,
@@ -95,6 +101,7 @@ public class ServerBundleTransmission {
     private String nextRandomString() {
         return Long.toHexString(random.nextLong());
     }
+
 
     @Async
     @Transactional
@@ -146,8 +153,29 @@ public class ServerBundleTransmission {
 
             UncompressedPayload uncompressedPayload =
                     BundleUtils.extractPayload(payload, uncompressedBundle.getSource().toPath());
-            logger.log(FINE, "[BundleTransmission] extracted payload from uncompressed bundle");
-
+            logger.log(INFO, "[CrashReports] extracted payload to: " + uncompressedPayload.getSource().getAbsolutePath());
+            Path crashReportSrcDir = uncompressedPayload.getSource().toPath()
+                    .resolve(Constants.BUNDLE_CRASH_REPORT_DIRECTORY_NAME);
+            logger.log(INFO, "[CrashReports] looking for crash reports in: " + crashReportSrcDir + " exists=" + Files.isDirectory(crashReportSrcDir));
+            if (Files.isDirectory(crashReportSrcDir)) {
+                Path destDir = Path.of(bundleStoreShared, "crashReports", "client");
+                logger.log(INFO, "[CrashReports] writing to destDir: " + destDir);
+                try {
+                    Files.createDirectories(destDir);
+                    long timestamp = System.currentTimeMillis();
+                    try (var entries = Files.list(crashReportSrcDir).filter(Files::isRegularFile)) {
+                        var reports = entries.sorted().collect(Collectors.toList());
+                        logger.log(INFO, "[CrashReports] found " + reports.size() + " report(s) for client " + clientId);
+                        for (int i = 0; i < reports.size(); i++) {
+                            Path dest = destDir.resolve(clientId + "_" + timestamp + "_" + (i + 1));
+                            logger.log(INFO, "[CrashReports] copying " + reports.get(i) + " -> " + dest);
+                            Files.copy(reports.get(i), dest, StandardCopyOption.REPLACE_EXISTING);
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.log(WARNING, "[CrashReports] failed to extract crash reports for client " + clientId, e);
+                }
+            }
             if (!"HB".equals(uncompressedPayload.getAckRecord().getBundleId())) {
                 this.serverWindowService.processACK(clientId, uncompressedPayload.getAckRecord().getBundleId());
             }

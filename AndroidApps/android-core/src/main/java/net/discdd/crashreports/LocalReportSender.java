@@ -27,6 +27,7 @@ import static java.util.logging.Level.SEVERE;
 public class LocalReportSender implements ReportSender {
     private static final Logger logger = Logger.getLogger(LocalReportSender.class.getName());
     static final int MAX_AMOUNT_REPORTS = 5;
+    private static final int CRASH_REPORT_NUM_INDEX = "crash_report".length();
     private static final Pattern CRASH_REPORT_PATTERN = Pattern.compile("^crash_report(\\d+)\\.txt$");
     CoreConfiguration config;
 
@@ -69,46 +70,62 @@ public class LocalReportSender implements ReportSender {
      * @return next available index
      */
     public int optimizeReports(Path reportsDir) throws IOException {
-        AtomicInteger num = new AtomicInteger();
-        logger.log(INFO, "ACRA: About to start counting num reports in dir");
-        try (var files = Files.walk(reportsDir)) {
-            files.forEach(file -> {
-                if (CRASH_REPORT_PATTERN.matcher(file.getFileName().toString()).matches()) {
-                    num.getAndIncrement();
-                    logger.log(INFO, "ACRA: Num reports (and counting possibly): " + num.getAcquire());
+        AtomicInteger numFiles = new AtomicInteger();
+        logger.log(INFO, "ACRA: About to start counting numFiles reports in dir");
+        try (var stream = Files.walk(reportsDir)) {
+            stream.forEach(file -> {
+                if (file.getFileName().toString().startsWith("crash_report")) {
+                    numFiles.getAndIncrement();
+                    logger.log(INFO, "ACRA: Num reports (and counting possibly): " + numFiles.getAcquire());
                 }
             });
-        }
-        if (num.getAcquire() >= MAX_AMOUNT_REPORTS) {
-            logger.log(INFO, "ACRA: Max num reports read, deleting oldest");
-            try (var files = Files.walk(reportsDir)) {
-                files.sorted().forEach(file -> {
-                    Matcher matcher = CRASH_REPORT_PATTERN.matcher(file.getFileName().toString());
-                    if (!matcher.matches()) return; // skip legacy (crash_report.txt) and malformed files
-                    int currNum = Integer.parseInt(matcher.group(1));
-                    int newNum = currNum - 1;
-                    if (newNum != 0) {
-                        String modified = "crash_report" + newNum + ".txt";
-                        try {
-                            logger.log(INFO,
-                                       "Optimizing crash reports moving the file " + file.toFile().getName() + " to " +
-                                               file.getParent().resolve(modified));
-                            Files.move(file, file.getParent().resolve(modified), StandardCopyOption.REPLACE_EXISTING);
-                        } catch (IOException e) {
-                            logger.log(SEVERE, "Optimizing crash reports unsuccessfully attempted to move directory");
+            if (numFiles.getAcquire() >= MAX_AMOUNT_REPORTS) {
+                logger.log(INFO, "ACRA: Max numFiles reports read, deleting oldest");
+                // crash reports to-be-bundled reached max, scooting all current numbers down
+                try (var stream2 = Files.walk(reportsDir)) {
+                    stream2.sorted().forEach(file -> {
+                        if (file.getFileName().toString().startsWith("crash_report")) {
+                            char currChar = file.getFileName().toString().charAt(CRASH_REPORT_NUM_INDEX);
+                            Matcher m = CRASH_REPORT_PATTERN.matcher(file.getFileName().toString());
+                            if (!m.matches()) return;
+                            int currNum;
+                            try {
+                                currNum = Character.getNumericValue(currChar);
+                            } catch (Exception e) {
+                                throw new IllegalArgumentException("Crash report is not written in format we expect");
+                            }
+                            int newNum = currNum - 1;
+                            char newChar = (char) ('0' + newNum);
+
+                            if (newNum != 0) {
+                                StringBuilder builder = new StringBuilder(file.getFileName().toString());
+                                builder.setCharAt(CRASH_REPORT_NUM_INDEX, newChar);
+                                String modified = builder.toString();
+                                try {
+                                    logger.log(INFO,
+                                               "Optimizing crash reports moving the file " + file.toFile().getName() +
+                                                       " to " + file.getParent().resolve(modified));
+                                    Files.move(file,
+                                               file.getParent().resolve(modified),
+                                               StandardCopyOption.REPLACE_EXISTING);
+                                } catch (IOException e) {
+                                    logger.log(SEVERE,
+                                               "Optimizing crash reports unsuccessfully attempted to move directory");
+                                }
+                            } else {
+                                if (file.toFile().delete()) {
+                                    logger.log(INFO,
+                                               "Optimizing crash reports successfully deleted the file: " +
+                                                       file.toFile().getName());
+                                }
+                            }
                         }
-                    } else {
-                        if (file.toFile().delete()) {
-                            logger.log(INFO,
-                                       "Optimizing crash reports successfully deleted the file: " +
-                                               file.toFile().getName());
-                        }
-                    }
-                });
+                    });
+                }
+                return MAX_AMOUNT_REPORTS;
             }
-            return MAX_AMOUNT_REPORTS;
+            return numFiles.getAcquire() + 1;
         }
-        return num.getAcquire() + 1;
     }
 
     @AutoService(ReportSenderFactory.class)

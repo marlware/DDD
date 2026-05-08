@@ -13,6 +13,7 @@ import net.discdd.grpc.EncryptedBundleId;
 import net.discdd.grpc.GrpcService;
 import net.discdd.grpc.ServerMessage;
 import net.discdd.grpc.Status;
+import net.discdd.server.applicationdatamanager.ServerApplicationDataManager;
 import net.discdd.server.repository.TransportMessageRepository;
 import net.discdd.server.bundletransmission.ServerBundleTransmission;
 import net.discdd.tls.DDDTLSUtil;
@@ -64,7 +65,7 @@ public class BundleServerServiceImpl extends BundleServerServiceGrpc.BundleServe
     public void setDir(String bundleDir) {
         ReceiveDir = bundleDir + java.io.File.separator + "receive";
         SendDir = bundleDir + java.io.File.separator + "send";
-        crashDir = bundleDir + java.io.File.separator + "crashReports";
+        crashDir = bundleDir + java.io.File.separator + "crashReports" + java.io.File.separator + "transport";
     }
 
     @Override
@@ -142,10 +143,8 @@ public class BundleServerServiceImpl extends BundleServerServiceGrpc.BundleServe
         for (int i = 0; i < request.getCrashReportDataCount(); i++) {
             File crashFile = new File(crashDir, name + "_" + (i + 1));
             try {
-                Files.write(crashFile.toPath(),
-                            request.getCrashReportData(i).toByteArray(),
-                            StandardOpenOption.CREATE,
-                            StandardOpenOption.TRUNCATE_EXISTING);
+                Files.write(crashFile.toPath(), request.getCrashReportData(i).toByteArray(),
+                            StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             } catch (IOException e) {
                 logger.log(WARNING, "Couldn't write crash file to " + crashFile, e);
                 response.onNext(CrashReportResponse.newBuilder().setResult(Status.FAILED).build());
